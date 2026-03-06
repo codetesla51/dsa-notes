@@ -9,8 +9,42 @@ import (
 // ============================================================================
 // SOLUTIONS - Common Algorithm Problems
 // ============================================================================
+//
+// REAL-WORLD ANALOGY:
+// Think of these solutions like a chef's recipe book - each problem is a
+// common dish, and each solution is a proven recipe. Just like a chef learns
+// classic techniques (sautéing, braising) that apply to many dishes, these
+// solutions demonstrate patterns that apply to many coding problems.
+//
+// ============================================================================
 // This file contains solutions to frequently asked coding interview questions
 // Each function demonstrates key patterns and techniques
+//
+// ASCII DIAGRAM - Problem Categories:
+//
+//     ┌─────────────────────────────────────────────────────────┐
+//     │           COMMON CODING PATTERNS                        │
+//     └─────────────────────────────────────────────────────────┘
+//              │
+//              ├─── STRING MANIPULATION
+//              │    ├─ nonRepeating      (frequency map + order preservation)
+//              │    ├─ freqOcuring       (frequency counting)
+//              │    ├─ lastWord          (string operations)
+//              │    ├─ repeatedSubString (pattern matching)
+//              │    ├─ validPalindrome   (two pointer + regex)
+//              │    └─ revVowel          (two pointer + conditional)
+//              │
+//              ├─── ARRAY OPTIMIZATION
+//              │    ├─ twoSum            (map eliminates nested loop)
+//              │    └─ containsDuplicate (early return optimization)
+//              │
+//              └─── BINARY SEARCH
+//                   └─ squart            (binary search on answer space)
+//
+// KEY INSIGHT:
+// Most of these O(n²) brute force problems → O(n) with maps
+// Most "find in sorted" problems → O(log n) with binary search
+//
 // ============================================================================
 
 // nonRepeating finds the first character that appears only once
@@ -490,40 +524,245 @@ func revVowel(s string) string {
 //
 // ============================================================================
 
+// containsDuplicate checks if array has any duplicate elements
+//
+// COMPLEXITY:
+// Time:  O(n) - single pass through array
+// Space: O(n) - map stores unique numbers
+//
+// REAL-WORLD ANALOGY:
+// Like checking if anyone at a party has the same name - keep a list
+// of names you've seen, return true as soon as you find a repeat
+//
+// KEY PATTERN: map[T]bool for existence checking
+// - We only care IF a number appeared before, not HOW MANY times
+// - map[int]bool is more efficient than map[int]int for this use case
+// - Can return early as soon as duplicate found
+//
+// EXAMPLE TRACE:
+// Input: nums = [1, 2, 3, 1]
+//
+// Initial:
+//
+//	seen = {}
+//
+// Iteration 1: n=1
+//
+//	Is 1 in seen? No
+//	seen = {1: true}
+//
+// Iteration 2: n=2
+//
+//	Is 2 in seen? No
+//	seen = {1: true, 2: true}
+//
+// Iteration 3: n=3
+//
+//	Is 3 in seen? No
+//	seen = {1: true, 2: true, 3: true}
+//
+// Iteration 4: n=1
+//
+//	Is 1 in seen? YES!
+//	Return true immediately
+//
+// Result: true
+//
+// WHY NOT USE THE FREQUENCY MAP APPROACH?
+// The original implementation works but is less efficient:
+//  1. First loop: count all occurrences
+//  2. Second loop: check for count >= 2
+//
+// # This requires TWO full passes through data
+//
+// Better approach: return as soon as first duplicate found
+// Optimization: if array has no duplicates, still O(n) but faster in practice
 func containsDuplicate(nums []int) bool {
-	occur := make(map[int]int)
+	// Map to track numbers we've seen
+	// Key: the number, Value: true (we only care about existence)
+	seen := make(map[int]bool)
 
+	// Single pass through array
 	for _, n := range nums {
-		occur[n]++
-	}
-	fmt.Println(occur)
-	for _, val := range occur {
-		if val >= 2 {
+		// Check if we've seen this number before
+		// O(1) average-case map lookup
+		if seen[n] {
+			// Found a duplicate!
+			// Return immediately - no need to check remaining elements
 			return true
 		}
+
+		// First time seeing this number
+		// Record it for future iterations
+		seen[n] = true
 	}
+
+	// Checked all elements, no duplicates found
 	return false
 }
+
+// ============================================================================
+
+// squart calculates integer square root using binary search
+// Returns floor(sqrt(x)) - largest integer whose square ≤ x
+//
+// COMPLEXITY:
+// Time:  O(log x) - binary search halves search space each iteration
+// Space: O(1) - only use a few variables
+//
+// REAL-WORLD ANALOGY:
+// Like guessing a number game where someone says "higher" or "lower"
+// Instead of guessing 1, 2, 3... we jump to the middle and eliminate half
+//
+// # BINARY SEARCH PATTERN applied to math problem
+//
+// EXAMPLE TRACE:
+// Input: x = 8
+// Goal: Find largest integer n where n² ≤ 8
+//
+// Initial:
+//
+//	left=0, right=8
+//	Answer is somewhere in [0, 8]
+//
+// Iteration 1:
+//
+//	mid = 0 + (8-0)/2 = 4
+//	square = 4*4 = 16
+//	16 > 8, too high
+//	right = 4-1 = 3
+//	Search space: [0, 3]
+//
+// Iteration 2:
+//
+//	mid = 0 + (3-0)/2 = 1
+//	square = 1*1 = 1
+//	1 < 8, too low
+//	left = 1+1 = 2
+//	Search space: [2, 3]
+//
+// Iteration 3:
+//
+//	mid = 2 + (3-2)/2 = 2
+//	square = 2*2 = 4
+//	4 < 8, too low
+//	left = 2+1 = 3
+//	Search space: [3, 3]
+//
+// Iteration 4:
+//
+//	mid = 3 + (3-3)/2 = 3
+//	square = 3*3 = 9
+//	9 > 8, too high
+//	right = 3-1 = 2
+//	Search space: [3, 2] - invalid!
+//
+// Loop exits: left=3 > right=2
+// Return right = 2
+//
+// Verification: 2² = 4 ≤ 8 ✓ and 3² = 9 > 8 ✓
+// Answer: 2
+//
+// WHY RETURN right NOT left?
+// When loop exits (left > right):
+//   - right is the last value where square ≤ x
+//   - left is the first value where square > x
+//
+// # We want floor(sqrt), so return right
+//
+// WHY mid = left + (right-left)/2?
+// Prevents integer overflow (same as binary_search/main.go)
+// For huge x values, (left+right) might overflow
 func squart(x int) int {
-	left := 0
-	right := x
+	// Edge cases: 0 and 1
+	// sqrt(0) = 0, sqrt(1) = 1
+	// No need to binary search
 	if x < 2 {
 		return x
 	}
+
+	// Binary search bounds
+	// Answer is somewhere in range [0, x]
+	// But we can optimize: sqrt(x) is never more than x/2 for x >= 2
+	// Example: sqrt(100) = 10, which is < 100/2 = 50
+	// But using right=x is simpler and still O(log x)
+	left := 0
+	right := x
+
+	// Binary search for the square root
 	for left <= right {
+		// Calculate midpoint (prevents overflow)
 		mid := left + (right-left)/2
+
+		// Square the midpoint
 		square := mid * mid
+
+		// Found exact square root
 		if square == x {
 			return mid
 		} else if square < x {
+			// mid² is too small
+			// The answer might be mid, or something larger
+			// Search right half: [mid+1, right]
 			left = mid + 1
 		} else {
+			// mid² is too large
+			// The answer is definitely smaller than mid
+			// Search left half: [left, mid-1]
 			right = mid - 1
 		}
 	}
+
+	// Loop exited: left > right
+	// right is the largest integer where square ≤ x
 	return right
 }
 func main() {
+	fmt.Println("=== Testing nonRepeating ===")
+	fmt.Println(nonRepeating("leetcode"))     // "l"
+	fmt.Println(nonRepeating("loveleetcode")) // "v"
+	fmt.Println(nonRepeating("aabb"))         // "" (all repeat)
 
-	fmt.Println(squart(8)) // "Aa" (case preserved, only ASCII)
+	fmt.Println("\n=== Testing twoSum ===")
+	fmt.Println(twoSum([]int{2, 7, 11, 15}, 9)) // [0, 1]
+	fmt.Println(twoSum([]int{3, 2, 4}, 6))      // [1, 2]
+	fmt.Println(twoSum([]int{3, 3}, 6))         // [0, 1]
+	fmt.Println(twoSum([]int{1, 2, 3}, 10))     // nil (no pair)
+
+	fmt.Println("\n=== Testing freqOcuring ===")
+	fmt.Println(freqOcuring("hello"))  // "l" (appears 2 times)
+	fmt.Println(freqOcuring("aabbcc")) // any of "a","b","c" (all appear 2x)
+
+	fmt.Println("\n=== Testing lastWord ===")
+	fmt.Println(lastWord("Hello World"))                 // 5
+	fmt.Println(lastWord("   fly me   to   the moon  ")) // 4 ("moon")
+	fmt.Println(lastWord("luffy is still joyboy"))       // 6 ("joyboy")
+
+	fmt.Println("\n=== Testing repeatedSubString ===")
+	fmt.Println(repeatedSubString("abab"))      // true ("ab" repeats)
+	fmt.Println(repeatedSubString("aba"))       // false
+	fmt.Println(repeatedSubString("abcabcabc")) // true ("abc" repeats)
+
+	fmt.Println("\n=== Testing validPalindrome ===")
+	fmt.Println(validPalindrome("A man, a plan, a canal: Panama")) // true
+	fmt.Println(validPalindrome("race a car"))                     // false
+	fmt.Println(validPalindrome(""))                               // true (empty is palindrome)
+
+	fmt.Println("\n=== Testing revVowel ===")
+	fmt.Println(revVowel("hello"))    // "holle"
+	fmt.Println(revVowel("leetcode")) // "leotcede"
+	fmt.Println(revVowel("aA"))       // "Aa" (case preserved)
+
+	fmt.Println("\n=== Testing containsDuplicate ===")
+	fmt.Println(containsDuplicate([]int{1, 2, 3, 1}))                   // true
+	fmt.Println(containsDuplicate([]int{1, 2, 3, 4}))                   // false
+	fmt.Println(containsDuplicate([]int{1, 1, 1, 3, 3, 4, 3, 2, 4, 2})) // true
+
+	fmt.Println("\n=== Testing squart ===")
+	fmt.Println(squart(4))  // 2 (exact: 2² = 4)
+	fmt.Println(squart(8))  // 2 (floor: 2² = 4 ≤ 8 < 3² = 9)
+	fmt.Println(squart(0))  // 0
+	fmt.Println(squart(1))  // 1
+	fmt.Println(squart(16)) // 4 (exact: 4² = 16)
+	fmt.Println(squart(15)) // 3 (floor: 3² = 9 ≤ 15 < 4² = 16)
 }

@@ -6,7 +6,34 @@ import "fmt"
 // BIG O NOTATION - Understanding Time Complexity
 // ============================================================================
 //
+// REAL-WORLD ANALOGY:
+// Think of Big O like describing how long it takes to find a book:
+//   O(1)   - You know the exact shelf and spot (instant)
+//   O(log n) - Use the card catalog, eliminates half the library each step
+//   O(n)   - Walk through each shelf one by one until you find it
+//   O(n²)  - Check every book against every other book (very slow!)
+//
 // Big O describes how an algorithm's runtime grows as input size increases
+//
+// ASCII DIAGRAM - Growth Rate Comparison:
+//
+//  Time  │
+//   ↑    │                                              O(n²)
+//        │                                          ····
+//  1000  │                                      ····
+//        │                                  ····
+//   800  │                              ····
+//        │                          ····             O(n)
+//   600  │                      ····              ···
+//        │                  ····              ···
+//   400  │              ····              ···
+//        │          ····              ···
+//   200  │      ····    O(log n)  ···
+//        │  ····    ················ O(1)
+//     0  │━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━→ Input Size (n)
+//        0    10    20    30    40    50
+//
+// KEY INSIGHT: As n grows, differences become dramatic!
 //
 // Common complexities:
 // O(1)      - Constant:     Same time regardless of input size
@@ -15,6 +42,19 @@ import "fmt"
 // O(n log n)- Linearithmic: Efficient sorting algorithms
 // O(n²)     - Quadratic:    Nested loops over input
 // O(2^n)    - Exponential:  Doubles with each additional element
+//
+// COMPLEXITY COMPARISON TABLE:
+//
+// ┌──────────┬─────┬──────┬───────┬─────────┐
+// │    n     │ O(1)│O(logn│  O(n) │  O(n²)  │
+// ├──────────┼─────┼──────┼───────┼─────────┤
+// │   10     │  1  │   3  │   10  │   100   │
+// │   100    │  1  │   7  │  100  │ 10,000  │
+// │  1,000   │  1  │  10  │ 1,000 │1,000,000│
+// │ 10,000   │  1  │  13  │10,000 │100,000,000│
+// └──────────┴─────┴──────┴───────┴─────────┘
+//
+// Notice: O(n²) with 10,000 items = 100 MILLION operations!
 //
 // Focus on WORST CASE and ignore constants:
 //   5n + 3 → O(n)
